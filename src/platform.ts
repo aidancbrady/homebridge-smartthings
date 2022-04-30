@@ -17,7 +17,7 @@ export class JetBotHomebridgePlatform implements DynamicPlatformPlugin {
   // this is used to track restored cached accessories
   public readonly accessories: PlatformAccessory[] = [];
 
-  private jetBotCategory = 'JetBot';
+  private jetBotCategory = 'RobotCleaner';
   private categories = [this.jetBotCategory];
 
   constructor(
