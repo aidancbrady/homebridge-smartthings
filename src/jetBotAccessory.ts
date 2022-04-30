@@ -66,7 +66,7 @@ export class JetBotPlatformAccessory extends BasePlatformAccessory {
       this.service.updateCharacteristic(this.platform.Characteristic.On, state.state === 'cleaning');
       this.battery.updateCharacteristic(this.platform.Characteristic.BatteryLevel, state.battery || 0);
       this.battery.updateCharacteristic(this.platform.Characteristic.ChargingState,
-          (state.state === 'charging' || state.state === 'charged') ? 1 : 0);
+        (state.state === 'charging' || state.state === 'charged') ? 1 : 0);
       this.battery.updateCharacteristic(this.platform.Characteristic.StatusLowBattery,
         state.state === 'charging' ? 0 : (state.battery < 20 ? 1 : 0));
     });
