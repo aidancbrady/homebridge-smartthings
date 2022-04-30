@@ -1,31 +1,24 @@
 import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
-import { LightbulbPlatformAccessory } from './lightBulbAccessory';
-import { SwitchPlatformAccessory } from './switchAccessory';
 import axios = require('axios');
 import { BasePlatformAccessory } from './basePlatformAccessory';
-import { FanPlatformAccessory } from './fanAccessory';
-import { GarageDoorPlatformAccessory } from './garageDoorAccessory';
+import { JetBotPlatformAccessory } from './jetBotAccessory';
 
 /**
  * HomebridgePlatform
  * This class is the main constructor for your plugin, this is where you should
  * parse the user config and discover/register accessories with Homebridge.
  */
-export class IKHomeBridgeHomebridgePlatform implements DynamicPlatformPlugin {
+export class JetBotHomebridgePlatform implements DynamicPlatformPlugin {
   public readonly Service: typeof Service = this.api.hap.Service;
   public readonly Characteristic: typeof Characteristic = this.api.hap.Characteristic;
 
   // this is used to track restored cached accessories
   public readonly accessories: PlatformAccessory[] = [];
 
-  private switchCat = 'Switch';
-  private lightCat = 'Light';
-  private plugCat = 'SmartPlug';
-  private fanCat = 'Fan';
-  private garageDoorCat = 'GarageDoor';
-  private categories = [this.switchCat, this.lightCat, this.plugCat, this.fanCat, this.garageDoorCat];
+  private jetBotCategory = 'JetBot';
+  private categories = [this.jetBotCategory];
 
   constructor(
     public readonly log: Logger,
@@ -83,7 +76,6 @@ export class IKHomeBridgeHomebridgePlatform implements DynamicPlatformPlugin {
     });
 
     return new Promise<Array<object>>((resolve, reject) => {
-
       axInstance.get(command).then((res) => {
         res.data.items.forEach((device) => {
           this.log.debug('Pushing ' + device.label);
@@ -179,19 +171,8 @@ export class IKHomeBridgeHomebridgePlatform implements DynamicPlatformPlugin {
     const category = this.categories.find(c => device.components[0].categories.find(cat => cat.name === c));
 
     switch (category) {
-      case this.switchCat: {
-        return new SwitchPlatformAccessory(this, accessory);
-      }
-      case this.plugCat: {
-        return new SwitchPlatformAccessory(this, accessory);
-      }
-      case this.lightCat: {
-        return new LightbulbPlatformAccessory(this, accessory);
-      }
-      case this.fanCat: {
-        return new FanPlatformAccessory(this, accessory);
-      }case this.garageDoorCat: {
-        return new GarageDoorPlatformAccessory(this, accessory);
+      case this.jetBotCategory: {
+        return new JetBotPlatformAccessory(this, accessory);
       }
       default: {
         throw new TypeError();
@@ -199,4 +180,3 @@ export class IKHomeBridgeHomebridgePlatform implements DynamicPlatformPlugin {
     }
   }
 }
-

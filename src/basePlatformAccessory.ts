@@ -1,6 +1,6 @@
 import { PlatformAccessory, Logger, API, Characteristic } from 'homebridge';
 import axios = require('axios');
-import { IKHomeBridgeHomebridgePlatform } from './platform';
+import { JetBotHomebridgePlatform } from './platform';
 
 /**
  * Platform Accessory
@@ -16,7 +16,7 @@ export abstract class BasePlatformAccessory {
    */
 
   protected accessory: PlatformAccessory;
-  protected platform: IKHomeBridgeHomebridgePlatform;
+  protected platform: JetBotHomebridgePlatform;
   protected name: string;
   protected characteristic: typeof Characteristic;
   protected log: Logger;
@@ -30,7 +30,7 @@ export abstract class BasePlatformAccessory {
   protected online = true;
 
   constructor(
-    platform: IKHomeBridgeHomebridgePlatform,
+    platform: JetBotHomebridgePlatform,
     accessory: PlatformAccessory,
   ) {
     this.accessory = accessory;
@@ -68,5 +68,4 @@ export abstract class BasePlatformAccessory {
         }
       });
   }
-
 }

@@ -1,16 +1,16 @@
 {
   "private": false,
-  "displayName": "SmartThings Plugin",
-  "name": "homebridge-smartthings-ik",
-  "version": "1.0.2",
-  "description": "Will find all devices and allow them to be controlled from Home.",
+  "displayName": "SmartThings JetBot Plugin",
+  "name": "homebridge-smartthings-jetbot",
+  "version": "1.0.0",
+  "description": "Will find all JetBot devices and allow them to be controlled from HomeKit.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iklein99/homebridge-smartthings.git"
+    "url": "https://github.com/aidancbrady/homebridge-smartthings.git"
   },
   "bugs": {
-    "url": "https://github.com/iklein99/homebridge-smartthings/issues"
+    "url": "https://github.com/aidancbrady/homebridge-smartthings/issues"
   },
   "engines": {
     "node": ">=14.18.1",

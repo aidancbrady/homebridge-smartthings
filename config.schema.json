@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "HomeBridgeSmartThings",
+  "pluginAlias": "HomeBridgeSmartThingsJetBot",
   "pluginType": "platform",
   "singular": true,
   "schema": {
@@ -9,7 +9,7 @@
         "title": "Name",
         "type": "string",
         "required": true,
-        "default": "Smartthings Plug (IK)"},
+        "default": "SmartThings JetBot Plugin"},
       "BaseURL": {
         "title": "Base URL",
         "type": "string",
@@ -20,11 +20,11 @@
         "type": "string",
         "required": true,
         "default": ""},
-      "GarageDoorMaxPoll": {
-        "title": "Garage Door Max Poll",
+      "RefreshDelay": {
+        "title": "State Refresh Delay",
         "type": "integer",
         "required": true,
-        "default": 40}
+        "default": 60}
       }
   },
   "form": null,
