@@ -4,13 +4,13 @@ import { JetBotHomebridgePlatform } from './platform';
 import { EventEmitter } from 'events';
 
 export class JetBotData {
-    battery: number;
-    state: string;
+  battery: number;
+  state: string;
 
-    constructor(battery: number, state: string) {
-        this.battery = battery;
-        this.state = state;
-    }
+  constructor(battery: number, state: string) {
+    this.battery = battery;
+    this.state = state;
+  }
 }
 
 /**
@@ -63,10 +63,11 @@ export class JetBotPlatformAccessory extends BasePlatformAccessory {
       .onGet(this.getStatusLowBattery.bind(this));
 
     this.events.on('update', (state: JetBotData) => {
-      this.service.updateCharacteristic(this.platform.Characteristic.On, state.state == "cleaning");
+      this.service.updateCharacteristic(this.platform.Characteristic.On, state.state === 'cleaning');
       this.battery.updateCharacteristic(this.platform.Characteristic.BatteryLevel, state.battery || 0);
-      this.battery.updateCharacteristic(this.platform.Characteristic.ChargingState, state.state == "charging" ? 1 : 0);
-      this.battery.updateCharacteristic(this.platform.Characteristic.StatusLowBattery, state.state == "charging" ? 0 : (state.battery < 20 ? 1 : 0));
+      this.battery.updateCharacteristic(this.platform.Characteristic.ChargingState, state.state === 'charging' ? 1 : 0);
+      this.battery.updateCharacteristic(this.platform.Characteristic.StatusLowBattery,
+        state.state === 'charging' ? 0 : (state.battery < 20 ? 1 : 0));
     });
 
     const interval = setInterval(() => {
@@ -81,18 +82,18 @@ export class JetBotPlatformAccessory extends BasePlatformAccessory {
   }
 
   async getStatus(): Promise<JetBotData> {
-      return new Promise<JetBotData>((resolve, reject) => {
-        this.axInstance.get(this.statusURL).then(res => {
-          let battery = res.data.components.main.battery.battery.value;
-          let state = res.data.components.main.samsungce.robotCleanerOperatingState.operatingState.value;
-          let data = new JetBotData(battery, state);
-          this.platform.log.debug(this.logPrefix, "Received state:", data.battery, data.state);
-          resolve(data);
-        }).catch(() => {
-          this.log.error('onSet FAILED for ' + this.name + '. Comm error');
-          reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
-        });
+    return new Promise<JetBotData>((resolve, reject) => {
+      this.axInstance.get(this.statusURL).then(res => {
+        const battery = res.data.components.main.battery.battery.value;
+        const state = res.data.components.main.samsungce.robotCleanerOperatingState.operatingState.value;
+        const data = new JetBotData(battery, state);
+        this.platform.log.debug(this.logPrefix, 'Received state:', data.battery, data.state);
+        resolve(data);
+      }).catch(() => {
+        this.log.error('onSet FAILED for ' + this.name + '. Comm error');
+        reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
       });
+    });
   }
 
   /**
@@ -111,7 +112,7 @@ export class JetBotPlatformAccessory extends BasePlatformAccessory {
         capability: 'samsungce.robotCleanerOperatingState',
         command: 'setOperatingState',
         component: 'main',
-        arguments: [value ? 'cleaning' : 'homing']
+        arguments: [value ? 'cleaning' : 'homing'],
       }])).then(() => {
         this.log.debug('onSet(' + value + ') SUCCESSFUL for ' + this.name);
         resolve();
@@ -133,7 +134,7 @@ export class JetBotPlatformAccessory extends BasePlatformAccessory {
         return reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
       }
       this.getStatus()
-        .then(status => resolve(status.state == "cleaning" ? 1 : 0))
+        .then(status => resolve(status.state === 'cleaning' ? 1 : 0))
         .catch(() => reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE)));
     });
   }
@@ -161,7 +162,7 @@ export class JetBotPlatformAccessory extends BasePlatformAccessory {
         return reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
       }
       this.getStatus()
-        .then(status => resolve(status.state == "charging" ? 1 : 0))
+        .then(status => resolve(status.state === 'charging' ? 1 : 0))
         .catch(() => reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE)));
     });
   }
@@ -175,7 +176,7 @@ export class JetBotPlatformAccessory extends BasePlatformAccessory {
         return reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
       }
       this.getStatus()
-        .then(status => resolve(status.state == "charging" ? 0 : (status.battery < 20 ? 1 : 0)))
+        .then(status => resolve(status.state === 'charging' ? 0 : (status.battery < 20 ? 1 : 0)))
         .catch(() => reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE)));
     });
   }
