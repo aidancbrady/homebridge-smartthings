@@ -50,17 +50,21 @@ export class JetBotPlatformAccessory extends BasePlatformAccessory {
     this.battery = this.accessory.getService(this.accessory.displayName + ' battery') ||
           this.accessory.addService(this.platform.Service.Battery, this.accessory.displayName + ' battery', 'Battery');
 
-    // register handlers for the On/Off Characteristic
+    // on/off characteristic
     this.service.getCharacteristic(platform.Characteristic.On)
       .onSet(this.setOn.bind(this))                // SET - bind to the `setOn` method below
-      .onGet(this.getOn.bind(this));               // GET - bind to the `getOn` method below
+      .onGet(() => this.getFromStatus(status =>
+              (status.state === 'cleaning' || status.state === 'processing') ? 1 : 0));
 
+    // battery details
     this.battery.getCharacteristic(this.platform.Characteristic.BatteryLevel)
-      .onGet(this.getBatteryLevel.bind(this));
+      .onGet(() => this.getFromStatus(status => status.battery));
     this.battery.getCharacteristic(this.platform.Characteristic.ChargingState)
-      .onGet(this.getChargingState.bind(this));
+      .onGet(() => this.getFromStatus(status =>
+        (status.state === 'charging' || status.state === 'charged') ? 1 : 0));
     this.battery.getCharacteristic(this.platform.Characteristic.StatusLowBattery)
-      .onGet(this.getStatusLowBattery.bind(this));
+      .onGet(() => this.getFromStatus(status =>
+        status.state === 'charging' ? 0 : (status.battery < 20 ? 1 : 0)));
 
     this.events.on('update', (state: JetBotData) => {
       this.service.updateCharacteristic(this.platform.Characteristic.On, state.state === 'cleaning');
@@ -97,10 +101,18 @@ export class JetBotPlatformAccessory extends BasePlatformAccessory {
     });
   }
 
-  /**
- * Handle "SET" requests from HomeKit
- * These are sent when the user changes the state of an accessory, for example, turning on a Light bulb.
- */
+  async getFromStatus(callback: (data: JetBotData) => CharacteristicValue): Promise<CharacteristicValue> {
+    return new Promise<CharacteristicValue>((resolve, reject) => {
+      if (!this.online) {
+        this.log.error(this.accessory.context.device.label + ' is offline');
+        return reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
+      }
+      this.getStatus()
+        .then(status => resolve(callback(status)))
+        .catch(() => reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE)));
+    });
+  }
+
   async setOn(value: CharacteristicValue): Promise<void> {
     this.log.debug('Received onSet(' + value + ') event for ' + this.name);
 
@@ -121,64 +133,6 @@ export class JetBotPlatformAccessory extends BasePlatformAccessory {
         this.log.error('onSet FAILED for ' + this.name + '. Comm error');
         reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
       });
-    });
-  }
-
-  async getOn(): Promise<CharacteristicValue> {
-    // if you need to return an error to show the device as "Not Responding" in the Home app:
-    // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
-    this.log.debug('Received onGet() event for ' + this.name);
-
-    return new Promise<CharacteristicValue>((resolve, reject) => {
-      if (!this.online) {
-        this.log.error(this.accessory.context.device.label + ' is offline');
-        return reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
-      }
-      this.getStatus()
-        .then(status => resolve(status.state === 'cleaning' ? 1 : 0))
-        .catch(() => reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE)));
-    });
-  }
-
-  async getBatteryLevel(): Promise<CharacteristicValue> {
-    this.log.debug('Received getBatteryLevel() onGet() event for ' + this.name);
-
-    return new Promise<CharacteristicValue>((resolve, reject) => {
-      if (!this.online) {
-        this.log.error(this.accessory.context.device.label + ' is offline');
-        return reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
-      }
-      this.getStatus()
-        .then(status => resolve(status.battery))
-        .catch(() => reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE)));
-    });
-  }
-
-  async getChargingState(): Promise<CharacteristicValue> {
-    this.log.debug('Received getChargingState() onGet() event for ' + this.name);
-
-    return new Promise<CharacteristicValue>((resolve, reject) => {
-      if (!this.online) {
-        this.log.error(this.accessory.context.device.label + ' is offline');
-        return reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
-      }
-      this.getStatus()
-        .then(status => resolve((status.state === 'charging' || status.state === 'charged') ? 1 : 0))
-        .catch(() => reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE)));
-    });
-  }
-
-  async getStatusLowBattery(): Promise<CharacteristicValue> {
-    this.log.debug('Received getStatusLowBattery() onGet() event for ' + this.name);
-
-    return new Promise<CharacteristicValue>((resolve, reject) => {
-      if (!this.online) {
-        this.log.error(this.accessory.context.device.label + ' is offline');
-        return reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
-      }
-      this.getStatus()
-        .then(status => resolve(status.state === 'charging' ? 0 : (status.battery < 20 ? 1 : 0)))
-        .catch(() => reject(new this.api.hap.HapStatusError(this.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE)));
     });
   }
 }
